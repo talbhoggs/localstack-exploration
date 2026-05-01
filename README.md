@@ -1,65 +1,47 @@
 # LocalStack Technical Validation Project
 
+> **Technical Validation**: Exploring LocalStack for local AWS development and testing
+
+[![LocalStack](https://img.shields.io/badge/LocalStack-Enabled-4CAF50?style=flat-square)](https://localstack.cloud/)
+[![Terraform](https://img.shields.io/badge/Terraform-IaC-7B42BC?style=flat-square)](https://www.terraform.io/)
+[![AWS](https://img.shields.io/badge/AWS-Serverless-FF9900?style=flat-square)](https://aws.amazon.com/)
+[![Python](https://img.shields.io/badge/Python-3.12-3776AB?style=flat-square)](https://www.python.org/)
+
 ## 🎯 Project Purpose
 
 This project serves as a **technical validation** and **exploration** of [LocalStack](https://localstack.cloud/) - a fully functional local AWS cloud stack. The goal is to evaluate LocalStack's capabilities for local development and testing of AWS serverless architectures without incurring cloud costs.
 
-## 🔬 What We're Validating
+## 📊 Architecture
 
-### Key Questions
-- ✅ Can LocalStack accurately emulate AWS services locally?
-- ✅ Does Infrastructure as Code (Terraform) work seamlessly with LocalStack?
-- ✅ How well does LocalStack support serverless patterns (API Gateway → Lambda → SQS)?
-- ✅ What are the limitations and differences from actual AWS?
-- ✅ Can this accelerate development and reduce cloud costs?
+![LocalStack Architecture](docs/images/architecture.png)
 
-### Validation Scope
+### Pattern: API Gateway → Lambda → SQS
 
-This proof-of-concept implements a common serverless pattern:
+This proof-of-concept implements a common serverless event-driven pattern:
 
 ```
 HTTP Request → API Gateway → Lambda Function → SQS Queue
 ```
 
-**AWS Services Tested:**
-- Amazon API Gateway (REST API)
-- AWS Lambda (Python 3.12)
-- Amazon SQS (Simple Queue Service)
-- AWS IAM (Roles & Policies)
-
-## 📊 Architecture
-
-![Architecture Diagram](architecture-diagram.drawio.png)
-
-### Components
-
-| Component | Technology | Purpose |
-|-----------|-----------|---------|
-| **API Gateway** | AWS REST API | HTTP endpoint for client requests |
-| **Lambda Function** | Python 3.12 | Business logic processor |
-| **SQS Queue** | Standard Queue | Asynchronous message storage |
-| **IAM** | Roles & Policies | Security and permissions |
-| **LocalStack** | Docker Container | Local AWS emulation |
-| **Terraform** | IaC Tool | Infrastructure provisioning |
-
-### Request Flow
-
-1. Client sends POST request with JSON payload to API Gateway
-2. API Gateway triggers Lambda function
-3. Lambda parses request and sends message to SQS
-4. SQS stores message for downstream processing
-5. Lambda returns success response to client
+**AWS Services Validated:**
+- ✅ Amazon API Gateway (REST API)
+- ✅ AWS Lambda (Python 3.12)
+- ✅ Amazon SQS (Simple Queue Service)
+- ✅ AWS IAM (Roles & Policies)
 
 ## 🚀 Quick Start
 
 ### Prerequisites
 
-- Docker Desktop
+```bash
+# Required software
+- Docker Desktop >= 20.10
 - Terraform >= 1.0
 - AWS CLI >= 2.0
 - Python >= 3.8
+```
 
-### Setup & Run
+### Setup in 5 Minutes
 
 ```bash
 # 1. Start LocalStack
@@ -89,221 +71,128 @@ aws --endpoint-url=http://localhost:4566 sqs receive-message \
 
 ```
 localstack/
-├── README.md                    # This file - Technical validation overview
-├── DOCUMENTATION.md             # Comprehensive setup and usage guide
-├── architecture-diagram.drawio  # Draw.io architecture diagram
-├── .gitignore                   # Git exclusions
+├── README.md                           # This file - Project overview
+├── .gitignore                          # Git exclusions
 │
-├── main.tf                      # Terraform infrastructure definition
-├── main.py                      # Lambda function source code
-├── docker-compose.yaml          # LocalStack container configuration
-├── requirements.txt             # Python dependencies (boto3)
+├── docs/                               # Documentation
+│   ├── 01-GETTING-STARTED.md          # Setup and installation
+│   ├── 02-ARCHITECTURE.md             # Architecture details
+│   ├── 03-DEPLOYMENT.md               # Deployment guide
+│   ├── 04-TESTING.md                  # Testing procedures
+│   ├── 05-CONFIGURATION.md            # Configuration reference
+│   ├── 06-TROUBLESHOOTING.md          # Common issues and solutions
+│   ├── 07-VALIDATION-RESULTS.md       # Technical validation findings
+│   └── images/                        # Diagrams and images
+│       ├── architecture.png           # Architecture diagram
+│       └── architecture-diagram.drawio # Editable diagram
 │
-├── package/                     # Lambda deployment package (generated)
-│   ├── main.py
-│   ├── my_lambda.zip
-│   └── [dependencies]
+├── main.tf                             # Terraform infrastructure
+├── main.py                             # Lambda function source
+├── docker-compose.yaml                 # LocalStack configuration
+├── requirements.txt                    # Python dependencies
 │
-└── volume/                      # LocalStack persistent data (generated)
+├── package/                            # Lambda deployment (generated)
+└── volume/                             # LocalStack data (generated)
 ```
 
-## 🧪 Validation Results
+## 📚 Documentation
+
+| Document | Description |
+|----------|-------------|
+| **[Getting Started](docs/01-GETTING-STARTED.md)** | Prerequisites, installation, and initial setup |
+| **[Architecture](docs/02-ARCHITECTURE.md)** | Detailed architecture and component descriptions |
+| **[Deployment Guide](docs/03-DEPLOYMENT.md)** | Step-by-step deployment instructions |
+| **[Testing Guide](docs/04-TESTING.md)** | Testing procedures and examples |
+| **[Configuration](docs/05-CONFIGURATION.md)** | Configuration options and environment variables |
+| **[Troubleshooting](docs/06-TROUBLESHOOTING.md)** | Common issues and solutions |
+| **[Validation Results](docs/07-VALIDATION-RESULTS.md)** | Technical validation findings and recommendations |
+
+## 🧪 Validation Results Summary
 
 ### ✅ What Works Well
 
-1. **Infrastructure as Code**
-   - Terraform works seamlessly with LocalStack
-   - All AWS resources provision correctly
-   - State management functions as expected
+| Aspect | Rating | Notes |
+|--------|--------|-------|
+| **Infrastructure as Code** | ⭐⭐⭐⭐⭐ | Terraform works seamlessly |
+| **API Gateway** | ⭐⭐⭐⭐⭐ | Full functionality validated |
+| **Lambda Functions** | ⭐⭐⭐⭐⭐ | Python runtime works perfectly |
+| **SQS Integration** | ⭐⭐⭐⭐⭐ | Message handling as expected |
+| **Developer Experience** | ⭐⭐⭐⭐☆ | Minor URL format differences |
 
-2. **API Gateway**
-   - REST API endpoints work correctly
-   - Request/response handling matches AWS behavior
-   - Integration with Lambda functions successful
+### 📈 Key Metrics
 
-3. **Lambda Functions**
-   - Python runtime executes properly
-   - Environment variables work correctly
-   - Error handling behaves as expected
-
-4. **SQS Integration**
-   - Messages sent and received successfully
-   - Queue operations match AWS behavior
-   - Message persistence works correctly
-
-5. **IAM Permissions**
-   - Role and policy definitions work
-   - Permission enforcement functions properly
-
-### ⚠️ Limitations & Differences
-
-1. **URL Format**
-   - LocalStack requires `_user_request_` in API Gateway URLs
-   - Format: `http://localhost:4566/restapis/{api-id}/{stage}/_user_request_/{path}`
-   - Different from AWS production URLs
-
-2. **CloudWatch Logs**
-   - Not explicitly configured in this validation
-   - LocalStack may auto-generate logs, but behavior differs from AWS
-   - Requires additional configuration for full parity
-
-3. **Authentication**
-   - Uses test credentials (`access_key: test`, `secret_key: test`)
-   - Real AWS authentication not validated
-
-4. **Performance**
-   - Local execution is faster than AWS
-   - Not representative of production latency
-
-5. **Service Coverage**
-   - Only tested: API Gateway, Lambda, SQS, IAM
-   - Many AWS services not validated
+- **Setup Time**: ~10 minutes
+- **Deployment Speed**: ~30 seconds
+- **Cost**: $0 (vs AWS charges)
+- **AWS Parity**: ~85% for tested services
+- **Recommendation**: ✅ **APPROVED for Development Use**
 
 ## 💡 Key Learnings
 
 ### Benefits
-
-✅ **Cost Savings**: Zero AWS costs during development  
-✅ **Speed**: Instant deployment and testing  
-✅ **Isolation**: No impact on production environments  
-✅ **Reproducibility**: Consistent local environment  
-✅ **Offline Development**: Works without internet  
+✅ **Zero AWS costs** during development  
+✅ **Instant deployment** and testing  
+✅ **Isolated environment** - no production impact  
+✅ **Reproducible** local setup  
+✅ **Offline development** capability  
 
 ### Considerations
-
-⚠️ **Not 100% AWS Parity**: Some behavioral differences exist  
-⚠️ **Limited Service Coverage**: Not all AWS services supported  
-⚠️ **Configuration Differences**: URL formats and endpoints differ  
-⚠️ **Testing Required**: Still need AWS integration testing  
-⚠️ **Learning Curve**: LocalStack-specific quirks to learn  
+⚠️ **URL format differences** from AWS  
+⚠️ **Not 100% AWS parity** - some behavioral differences  
+⚠️ **Still need AWS integration testing** before production  
+⚠️ **Limited service coverage** - not all AWS services supported  
 
 ## 🎓 Use Cases
 
-### Ideal For:
-- ✅ Local development and testing
-- ✅ CI/CD pipeline testing
-- ✅ Learning AWS services
-- ✅ Proof-of-concept development
-- ✅ Integration testing
-- ✅ Cost-conscious development
+### ✅ Ideal For:
+- Local development and testing
+- CI/CD pipeline testing
+- Learning AWS services
+- Proof-of-concept development
+- Integration testing
+- Cost-conscious development
 
-### Not Ideal For:
-- ❌ Production workloads
-- ❌ Performance testing
-- ❌ Security validation
-- ❌ Complete AWS feature parity
-- ❌ Multi-region testing
-
-## 📈 Validation Metrics
-
-| Metric | Result | Notes |
-|--------|--------|-------|
-| **Setup Time** | ~10 minutes | Including Docker and dependencies |
-| **Deployment Speed** | ~30 seconds | Terraform apply |
-| **API Response Time** | <100ms | Local execution |
-| **Cost** | $0 | No AWS charges |
-| **AWS Parity** | ~85% | For tested services |
-| **Developer Experience** | ⭐⭐⭐⭐☆ | 4/5 - Minor quirks |
+### ❌ Not Ideal For:
+- Production workloads
+- Performance testing
+- Security validation
+- Complete AWS feature parity
+- Multi-region testing
 
 ## 🔄 Next Steps
 
 ### Recommended Validations
-
-1. **Expand Service Coverage**
-   - [ ] Test S3 integration
-   - [ ] Validate DynamoDB operations
-   - [ ] Test SNS notifications
-   - [ ] Validate Step Functions
-
-2. **Advanced Patterns**
-   - [ ] Event-driven architectures
-   - [ ] Microservices communication
-   - [ ] Stream processing (Kinesis)
-   - [ ] GraphQL APIs (AppSync)
-
-3. **CI/CD Integration**
-   - [ ] GitHub Actions workflow
-   - [ ] Automated testing
-   - [ ] Pre-deployment validation
-
-4. **Production Readiness**
-   - [ ] AWS deployment comparison
-   - [ ] Performance benchmarking
-   - [ ] Security validation
-   - [ ] Cost analysis
-
-## 📚 Documentation
-
-- **[DOCUMENTATION.md](DOCUMENTATION.md)** - Comprehensive setup, deployment, and troubleshooting guide
-- **[architecture-diagram.drawio](architecture-diagram.drawio)** - Editable architecture diagram with AWS icons
+- [ ] Test S3 integration
+- [ ] Validate DynamoDB operations
+- [ ] Test SNS notifications
+- [ ] Validate Step Functions
+- [ ] CI/CD integration
+- [ ] Performance benchmarking
 
 ## 🔗 Resources
 
-### Official Documentation
-- [LocalStack Documentation](https://docs.localstack.cloud/)
-- [LocalStack GitHub](https://github.com/localstack/localstack)
-- [Terraform AWS Provider](https://registry.terraform.io/providers/hashicorp/aws/latest/docs)
+- **[LocalStack Documentation](https://docs.localstack.cloud/)**
+- **[Terraform AWS Provider](https://registry.terraform.io/providers/hashicorp/aws/latest/docs)**
+- **[Original Tutorial](https://www.youtube.com/watch?v=XPFl28a0mrQ&t=23s)**
+- **[LocalStack Community](https://discuss.localstack.cloud/)**
 
-### Related Projects
-- [Original Tutorial](https://www.youtube.com/watch?v=XPFl28a0mrQ&t=23s)
-- [Tutorial GitHub Repo](https://github.com/marcogreiveldinger/videos/tree/main/localstack)
-
-### Community
-- [LocalStack Slack](https://localstack.cloud/slack)
-- [LocalStack Discuss](https://discuss.localstack.cloud/)
-
-## 🤝 Contributing to Validation
+## 🤝 Contributing
 
 To extend this validation:
 
 1. Fork the repository
 2. Add new service tests
-3. Document findings
-4. Submit pull request with validation results
+3. Document findings in `docs/07-VALIDATION-RESULTS.md`
+4. Submit pull request
 
-## 📝 Validation Checklist
+## 📝 License
 
-- [x] LocalStack installation and setup
-- [x] Terraform integration
-- [x] API Gateway configuration
-- [x] Lambda function deployment
-- [x] SQS queue operations
-- [x] IAM roles and policies
-- [x] End-to-end request flow
-- [x] Error handling
-- [ ] CloudWatch Logs integration
-- [ ] Additional AWS services
-- [ ] Performance benchmarking
-- [ ] Production deployment comparison
-
-## 🏁 Conclusion
-
-### Recommendation: ✅ **APPROVED for Development Use**
-
-LocalStack successfully validates as a viable tool for local AWS development. It provides:
-- Significant cost savings during development
-- Fast iteration cycles
-- Good AWS service emulation for tested services
-- Excellent developer experience
-
-### Caveats:
-- Not a complete replacement for AWS testing
-- Some behavioral differences exist
-- Production deployment still requires AWS validation
-- Limited to supported services
-
-### Next Actions:
-1. ✅ Adopt LocalStack for local development
-2. ✅ Integrate into CI/CD pipelines
-3. ⚠️ Maintain AWS integration tests
-4. ⚠️ Document LocalStack-specific configurations
-5. 📊 Monitor for service parity updates
+This project is for educational and technical validation purposes.
 
 ---
 
 **Project Status**: ✅ Technical Validation Complete  
 **Last Updated**: 2026-05-01  
-**Validation Team**: Development Team  
 **Recommendation**: Approved for Development & Testing Environments
 
-For detailed setup instructions, troubleshooting, and advanced usage, see [DOCUMENTATION.md](DOCUMENTATION.md).
+For detailed documentation, see the [docs](docs/) folder.
