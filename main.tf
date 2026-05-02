@@ -5,7 +5,8 @@ provider "aws" {
   s3_use_path_style           = true
   skip_credentials_validation = true
   skip_requesting_account_id  = true
-
+  skip_metadata_api_check     = true
+  
   endpoints {
     apigateway = "http://localhost:4566"
     lambda     = "http://localhost:4566"
@@ -121,7 +122,13 @@ resource "aws_lambda_permission" "apigw_lambda" {
 resource "aws_api_gateway_deployment" "rest_deployment" {
   depends_on  = [aws_api_gateway_integration.mylambda_integration]
   rest_api_id = aws_api_gateway_rest_api.rest_api.id
-  stage_name  = "dev"
+}
+
+# Stage resource (this is where stage_name belongs)
+resource "aws_api_gateway_stage" "dev" {
+  rest_api_id   = aws_api_gateway_rest_api.rest_api.id
+  deployment_id = aws_api_gateway_deployment.rest_deployment.id
+  stage_name    = "dev"
 }
 
 # Outputs

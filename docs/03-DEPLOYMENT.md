@@ -174,10 +174,39 @@ terraform plan
 10. `aws_lambda_permission.apigw_lambda`
 11. `aws_api_gateway_deployment.rest_deployment`
 
-### Apply Configuration
+### Best Practice: Using Plan Files
+
+For safer deployments, use a plan file to ensure what you reviewed is exactly what gets applied:
 
 ```bash
-# Deploy infrastructure
+# Generate and save execution plan
+terraform plan -out=tfplan -detailed-exitcode
+
+# Review the plan output carefully
+# Exit codes: 0 = no changes, 1 = error, 2 = changes present
+
+# Apply the exact plan that was reviewed
+terraform apply "tfplan"
+
+# Clean up plan file after successful apply
+rm tfplan
+```
+
+**Benefits:**
+- ✅ **Consistency**: Guarantees what you reviewed is exactly what gets applied
+- ✅ **Safety**: Prevents race conditions in team environments
+- ✅ **Automation**: `-detailed-exitcode` enables CI/CD pipeline decisions
+- ✅ **Audit Trail**: Plan files serve as deployment records
+
+**Exit Code Reference:**
+- `0` = No changes needed
+- `1` = Error occurred
+- `2` = Changes present and plan succeeded
+
+### Apply Configuration (Alternative Method)
+
+```bash
+# Deploy infrastructure (basic method)
 terraform apply
 
 # Review plan and type 'yes' to confirm
@@ -342,6 +371,73 @@ terraform apply -auto-approve
 - [ ] End-to-end test passes
 - [ ] Message appears in SQS
 
+## 🏆 Terraform Best Practices
+
+### Use Plan Files for All Deployments
+
+Always use plan files to ensure consistency and safety:
+
+```bash
+# Generate plan
+terraform plan -out=tfplan -detailed-exitcode
+
+# Review carefully
+# Apply exact plan
+terraform apply "tfplan"
+
+# Clean up
+rm tfplan
+```
+
+### Leverage Exit Codes in Automation
+
+The `-detailed-exitcode` flag is essential for CI/CD pipelines:
+
+```bash
+# In CI/CD scripts
+terraform plan -out=tfplan -detailed-exitcode
+EXIT_CODE=$?
+
+if [ $EXIT_CODE -eq 0 ]; then
+  echo "No changes needed"
+elif [ $EXIT_CODE -eq 1 ]; then
+  echo "Error occurred"
+  exit 1
+elif [ $EXIT_CODE -eq 2 ]; then
+  echo "Changes detected, applying..."
+  terraform apply "tfplan"
+fi
+```
+
+### State Management
+
+```bash
+# Always backup state before major changes
+cp terraform.tfstate terraform.tfstate.backup
+
+# Use remote state for team collaboration (production)
+# Configure in main.tf:
+# terraform {
+#   backend "s3" {
+#     bucket = "my-terraform-state"
+#     key    = "localstack/terraform.tfstate"
+#     region = "us-east-1"
+#   }
+# }
+```
+
+### Workspace Usage
+
+```bash
+# Use workspaces for multiple environments
+terraform workspace new dev
+terraform workspace new staging
+terraform workspace new prod
+
+# Switch between workspaces
+terraform workspace select dev
+```
+
 ## 🚨 Common Deployment Issues
 
 ### Issue: Lambda Package Too Large
@@ -424,12 +520,14 @@ echo "LocalStack is ready!"
 
 ### Production Recommendations
 
-1. **Use S3 Backend** for Terraform state
-2. **Enable Versioning** for Lambda functions
-3. **Use CI/CD Pipeline** for deployments
-4. **Implement Blue/Green** deployment
-5. **Add Monitoring** and alarms
-6. **Enable Encryption** at rest and in transit
+1. **Use Plan Files** - Always use `terraform plan -out=tfplan -detailed-exitcode` and `terraform apply "tfplan"`
+2. **Use S3 Backend** for Terraform state with state locking (DynamoDB)
+3. **Enable Versioning** for Lambda functions
+4. **Use CI/CD Pipeline** for deployments with automated plan/apply
+5. **Implement Blue/Green** deployment strategies
+6. **Add Monitoring** and alarms (CloudWatch)
+7. **Enable Encryption** at rest and in transit
+8. **Use Workspaces** for environment separation (dev/staging/prod)
 
 ## 🔄 Rollback Strategy
 
