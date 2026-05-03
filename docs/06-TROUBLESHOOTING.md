@@ -31,6 +31,116 @@ echo -e "\n6. API Gateways:"
 aws --endpoint-url=http://localhost:4566 apigateway get-rest-apis | jq .
 ```
 
+## 🔐 AWS CLI Credential Issues
+
+### Issue 1: AWS SSO Token Expired Error
+
+**Symptoms:**
+- `Error when retrieving token from sso: Token has expired and refresh failed`
+- AWS CLI commands fail with SSO authentication errors
+- Commands work after setting environment variables
+
+**Root Cause:**
+The AWS CLI is configured to use AWS SSO (Single Sign-On) for authentication, but your SSO session token has expired. When running AWS CLI commands against LocalStack, the CLI tries to use SSO credentials by default, which causes the error. LocalStack doesn't require real AWS credentials and accepts dummy values like "test".
+
+**Diagnosis:**
+```bash
+# Check your AWS CLI configuration
+cat ~/.aws/config
+
+# Check if SSO profile is configured
+grep -A 5 "\[profile" ~/.aws/config | grep sso
+
+# Test LocalStack connectivity
+curl http://localhost:4566/_localstack/health
+```
+
+**Solutions:**
+
+**Solution A: Use Environment Variables (Quick Fix)**
+```bash
+# Set dummy credentials for LocalStack
+export AWS_ACCESS_KEY_ID="test"
+export AWS_SECRET_ACCESS_KEY="test"
+export AWS_DEFAULT_REGION="us-east-1"
+
+# Now AWS CLI commands will work
+aws --endpoint-url=http://localhost:4566 sqs receive-message \
+  --queue-url http://localhost:4566/000000000000/my-queue
+```
+
+**Solution B: Create LocalStack Profile (Recommended)**
+
+Create a dedicated profile for LocalStack in `~/.aws/config`:
+```ini
+[profile localstack]
+region = us-east-1
+output = json
+```
+
+And in `~/.aws/credentials`:
+```ini
+[localstack]
+aws_access_key_id = test
+aws_secret_access_key = test
+```
+
+Then use the profile:
+```bash
+aws --profile localstack --endpoint-url=http://localhost:4566 sqs receive-message \
+  --queue-url http://localhost:4566/000000000000/my-queue
+```
+
+**Solution C: Use Inline Credentials (One-off Commands)**
+```bash
+# Prefix commands with credentials
+AWS_ACCESS_KEY_ID=test AWS_SECRET_ACCESS_KEY=test \
+  aws --endpoint-url=http://localhost:4566 sqs receive-message \
+  --queue-url http://localhost:4566/000000000000/my-queue
+```
+
+**Solution D: Create Shell Alias (Best for Frequent Use)**
+
+Add to your `~/.bashrc` or `~/.zshrc`:
+```bash
+# LocalStack AWS CLI alias
+alias awslocal='AWS_ACCESS_KEY_ID=test AWS_SECRET_ACCESS_KEY=test aws --endpoint-url=http://localhost:4566'
+```
+
+Reload your shell:
+```bash
+source ~/.bashrc  # or source ~/.zshrc
+```
+
+Then use the alias:
+```bash
+awslocal sqs receive-message --queue-url http://localhost:4566/000000000000/my-queue
+awslocal lambda list-functions
+awslocal s3 ls
+```
+
+**Why This Works:**
+
+The AWS CLI uses a credential chain with the following priority:
+1. **Environment variables** (highest priority)
+2. Credentials file (`~/.aws/credentials`)
+3. AWS SSO
+4. IAM roles (for EC2 instances)
+
+By setting environment variables or using a dedicated profile, you bypass the expired SSO credentials. LocalStack doesn't validate credentials, so "test" values work perfectly.
+
+**Best Practice:**
+
+For a clean LocalStack workflow, use the shell alias approach:
+```bash
+# Add to ~/.bashrc or ~/.zshrc
+alias awslocal='AWS_ACCESS_KEY_ID=test AWS_SECRET_ACCESS_KEY=test aws --endpoint-url=http://localhost:4566'
+
+# Or use the official awslocal wrapper
+pip install awscli-local
+awslocal sqs list-queues
+```
+
 ## 🐳 LocalStack Issues
 
 ### Issue 1: LocalStack Won't Start

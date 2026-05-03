@@ -52,9 +52,10 @@ pip install -r requirements.txt -t ./package
 cp main.py ./package/
 cd package && zip -r my_lambda.zip . && cd ..
 
-# 3. Deploy infrastructure
+# 3. Deploy infrastructure (best practice)
 terraform init
-terraform apply -auto-approve
+terraform plan -out=tfplan -detailed-exitcode
+terraform apply "tfplan"
 
 # 4. Test the API
 API_URL=$(terraform output -raw invoke_url_localstack)
@@ -63,9 +64,22 @@ curl -X POST "$API_URL" \
   -d '{"test":"validation","timestamp":"2026-05-01T09:00:00Z"}'
 
 # 5. Verify message in SQS
+# Note: If you get "Error when retrieving token from sso: Token has expired"
+# Set these environment variables first:
+export AWS_ACCESS_KEY_ID="test"
+export AWS_SECRET_ACCESS_KEY="test"
+export AWS_DEFAULT_REGION="us-east-1"
+
 aws --endpoint-url=http://localhost:4566 sqs receive-message \
   --queue-url http://localhost:4566/000000000000/my-queue
+
+# Or use inline credentials:
+AWS_ACCESS_KEY_ID=test AWS_SECRET_ACCESS_KEY=test \
+  aws --endpoint-url=http://localhost:4566 sqs receive-message \
+  --queue-url http://localhost:4566/000000000000/my-queue
 ```
+
+> **💡 Tip**: If you encounter AWS SSO token errors, see the [AWS CLI Credential Issues](docs/06-TROUBLESHOOTING.md#-aws-cli-credential-issues) section in the troubleshooting guide.
 
 ## 📁 Project Structure
 

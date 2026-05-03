@@ -129,12 +129,33 @@ cd ..
 # Initialize Terraform
 terraform init
 
-# Preview changes
+# Preview changes (basic method)
 terraform plan
 
-# Deploy
+# Deploy (basic method)
 terraform apply -auto-approve
 ```
+
+#### Best Practice: Using Plan Files
+
+For production-grade deployments, use plan files:
+
+```bash
+# Generate execution plan with detailed exit codes
+terraform plan -out=tfplan -detailed-exitcode
+
+# Apply the exact plan that was reviewed
+terraform apply "tfplan"
+
+# Clean up
+rm tfplan
+```
+
+**Why use plan files?**
+- ✅ Ensures consistency between plan and apply
+- ✅ Prevents accidental changes in team environments
+- ✅ Enables automated CI/CD pipelines
+- ✅ Provides audit trail of changes
 
 **Expected output:**
 ```
